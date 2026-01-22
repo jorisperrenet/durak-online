@@ -70,14 +70,14 @@ npm run dev
 
 The app will be available at `http://localhost:5173`.
 
-### Production Build
+### Production Build/Deployment
 
 ```bash
 cd web
 npm run build
+# OR
+npm run deploy
 ```
-
-The static files in `web/dist` can be deployed to any static hosting (GitHub Pages, Netlify, etc.).
 
 ## Project Structure
 
@@ -91,7 +91,3 @@ durak3/
         ├── wasm/                # WASM module (generated)
         └── workers/             # Web Workers for parallel MCTS
 ```
-
-## License
-
-MIT
