@@ -964,7 +964,7 @@
   <div class="mx-auto max-w-7xl px-4 py-4">
     <!-- Header -->
     <div class="flex items-center justify-between gap-4">
-      <h1 class="text-lg font-semibold tracking-tight text-zinc-300">Durak</h1>
+      <button class="text-lg font-semibold tracking-tight text-zinc-300 hover:text-zinc-100 transition-colors" on:click={() => { localStorage.clear(); location.reload() }}>Durak</button>
 
       <div class="flex items-center gap-2">
         <span class="text-[10px] text-zinc-600 italic">{settings.computerShuffle ? 'toggle for real game help' : 'toggle to play vs computer'}</span>
