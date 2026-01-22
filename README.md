@@ -1,4 +1,4 @@
-# Durak
+# Durak-online, a remodel of my previous [durak](https://github.com/jorisperrenet/durak)
 
 A browser-based implementation of [MCTS](https://en.wikipedia.org/wiki/Monte_Carlo_tree_search) to guide gameplay in the card game [Durak](https://en.wikipedia.org/wiki/Durak), with a clean web UI.
 
