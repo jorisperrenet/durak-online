@@ -1,5 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
+
+  let year = new Date().getFullYear()
   import Card from './lib/Card.svelte'
   import { cardLabel, suitSymbol } from './lib/cards.js'
   import { loadSettings, saveSettings, settingsToGameConfig, PlayerType, getHumanPlayer } from './lib/settings.js'
@@ -957,7 +959,8 @@
   }
 </script>
 
-<div class="min-h-screen">
+<div class="min-h-screen flex flex-col">
+  <main class="flex-1">
   <div class="mx-auto max-w-7xl px-4 py-4">
     <!-- Header -->
     <div class="flex items-center justify-between gap-4">
@@ -1569,5 +1572,10 @@
       </div>
     </div>
   </div>
+  </main>
+
+  <footer class="py-2 text-center text-sm text-zinc-500">
+    <p>&copy; {year} - <a href="https://jorisperrenet.github.io" class="hover:text-zinc-300 underline">Joris Perrenet</a></p>
+  </footer>
 </div>
 
