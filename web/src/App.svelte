@@ -226,6 +226,9 @@
 
   function areAllCardsDeducible(st) {
     if (!st) return false
+    // In manual mode, if the human player has unknown cards, we can't deduce yet
+    // The UI must first ask the player to specify those cards
+    if (!settings.computerShuffle && myUnknownCount(st) > 0) return false
     try { return all_cards_deducible(st) } catch { return false }
   }
 
