@@ -1,0 +1,36 @@
+# Rust
+target/
+
+# Node
+node_modules/
+web/node_modules/
+
+# Build outputs
+web/dist/
+durak-wasm/pkg/
+
+# Generated WASM files (rebuild with wasm-pack)
+web/src/wasm/durak_wasm_bg.wasm
+web/src/wasm/durak_wasm_bg.wasm.d.ts
+web/src/wasm/durak_wasm.d.ts
+web/src/wasm/durak_wasm.js
+web/src/wasm/package.json
+web/src/wasm/README.md
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+.env
+.env.local
+
+# Claude Code
+.claude/

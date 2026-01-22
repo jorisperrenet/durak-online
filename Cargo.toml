@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = ["durak-core", "durak-wasm"]
+
+[profile.release]
+opt-level = 3    # Optimize for speed to maximize rollouts
+lto = true       # Link-time optimization
+codegen-units = 1  # Better optimization with single codegen unit
+
