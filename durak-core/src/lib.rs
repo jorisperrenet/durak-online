@@ -830,19 +830,42 @@ impl GameState {
                 let usable = self.usable_cards(self.defender);
 
                 let mut acts = Vec::new();
-                let can_reflect = self.table.iter().all(|p| p.defense.is_none())
-                    && self.potential_reflect_defender().is_some();
+
+                // Check if reflecting is possible:
+                // - All piles must be undefended
+                // - There must be an active player to become the new defender
+                // For regular reflect: new defender needs cards for existing piles + the new reflected card pile
+                // For trump reflect: new defender only needs cards for existing piles (no new pile created)
+                let can_reflect_regular = if self.table.iter().all(|p| p.defense.is_none()) {
+                    if let Some(new_defender) = self.potential_reflect_defender() {
+                        self.hand_size(new_defender) >= self.undefended_pile_count() + 1
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                };
+
+                let can_reflect_trump = if self.table.iter().all(|p| p.defense.is_none()) {
+                    if let Some(new_defender) = self.potential_reflect_defender() {
+                        self.hand_size(new_defender) >= self.undefended_pile_count()
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                };
 
                 for c in usable {
                     if c.beats(&attack, self.trump) {
                         acts.push(Action::Defend { pile_index, card: c });
                     }
 
-                    if can_reflect && self.config.reflecting && c.rank() == attack.rank() {
+                    if can_reflect_regular && self.config.reflecting && c.rank() == attack.rank() {
                         acts.push(Action::Reflect { card: c });
                     }
 
-                    if can_reflect && self.config.trump_reflecting
+                    if can_reflect_trump && self.config.trump_reflecting
                         && c.rank() == attack.rank()
                         && c.suit() == self.trump
                         && !self.reflected_trumps.iter().any(|r| r.matches(&c))
@@ -990,6 +1013,13 @@ impl GameState {
                     ));
                 };
 
+                // Check if new defender has enough cards to defend all piles (including the reflected card)
+                if self.hand_size(new_defender) < self.undefended_pile_count() + 1 {
+                    return Err(EngineError::IllegalMove(
+                        "new defender does not have enough cards to defend all piles".into(),
+                    ));
+                }
+
                 self.remove_from_hand(self.defender, &card)?;
                 self.table.push(Pile { attack: card.as_public(), defense: None });
 
@@ -1042,6 +1072,14 @@ impl GameState {
                         "no active player to become defender".into(),
                     ));
                 };
+
+                // Check if new defender has enough cards to defend all piles
+                // Trump reflecting doesn't create a new pile, so only existing piles need to be defended
+                if self.hand_size(new_defender) < self.undefended_pile_count() {
+                    return Err(EngineError::IllegalMove(
+                        "new defender does not have enough cards to defend all piles".into(),
+                    ));
+                }
 
                 // Card stays in hand but becomes public, marked as used
                 self.reflected_trumps.push(card.as_public());
