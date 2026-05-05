@@ -60,6 +60,7 @@ cargo install wasm-pack
 # 1. Build the WASM module
 cd durak-wasm
 wasm-pack build --target web
+mkdir -p ../web/src/wasm/
 cp pkg/durak_wasm* ../web/src/wasm/
 
 # 2. Start the web app
