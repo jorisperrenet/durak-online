@@ -11,4 +11,6 @@ export type SiteProject = {
 	id: string;
 	label: string;
 	href: string;
+	image?: string;
+	accent: string;
 };
