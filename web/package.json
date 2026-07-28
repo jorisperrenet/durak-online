@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build:wasm": "wasm-pack build ../durak-wasm --target web && mkdir -p src/wasm && cp ../durak-wasm/pkg/durak_wasm.js ../durak-wasm/pkg/durak_wasm_bg.wasm src/wasm/",
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "npm run build && gh-pages -d dist"

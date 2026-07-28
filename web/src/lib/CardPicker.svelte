@@ -26,7 +26,7 @@
 <div class="space-y-3">
   {#each suits as suit}
     <div>
-      <div class="text-xs text-zinc-400 mb-2">{suit}</div>
+      <div class="mb-2 text-xs text-gray-600 dark:text-gray-400">{suit}</div>
       <div class="flex flex-wrap gap-2">
         {#each availableRanks as rank}
           {@const card = { suit, rank }}

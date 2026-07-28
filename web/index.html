@@ -3,23 +3,42 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <title>Durak Online — In-game MCTS Helper for the Card Game Durak</title>
-    <meta name="description" content="Play the Russian card game Durak online with an in-browser Monte Carlo Tree Search assistant. Multi-threaded WebAssembly engine in Rust suggests the strongest move from any position." />
+    <meta name="theme-color" content="#f9fbff" />
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <script>
+      try { document.documentElement.classList.toggle('dark', localStorage.getItem('theme') !== 'light'); } catch (e) {}
+    </script>
+    <title>Durak AI Helper — Play or Get MCTS Move Suggestions</title>
+    <meta name="description" content="Play Durak against browser AI opponents, or enter a real-life game to get MCTS move suggestions and win probabilities from a multi-threaded Rust engine." />
     <meta name="author" content="Joris Perrenet" />
     <meta name="keywords" content="Durak, card game, MCTS, Monte Carlo Tree Search, WebAssembly, Rust, online card game, durak online, Joris Perrenet" />
-    <link rel="canonical" href="https://jorisperrenet.com/durak-online" />
+    <link rel="canonical" href="https://jorisperrenet.com/durak-online/" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Durak Online — In-game MCTS Helper" />
-    <meta property="og:description" content="Play the Russian card game Durak in your browser with a Monte Carlo Tree Search assistant powered by multi-threaded WebAssembly." />
-    <meta property="og:url" content="https://jorisperrenet.com/durak-online" />
+    <meta property="og:title" content="Durak AI Helper — Play or Get MCTS Move Suggestions" />
+    <meta property="og:description" content="Play against AI opponents or enter your real-life Durak position for MCTS move suggestions and win probabilities." />
+    <meta property="og:url" content="https://jorisperrenet.com/durak-online/" />
     <meta property="og:image" content="https://jorisperrenet.com/screenshots/durak-online.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Durak Online — In-game MCTS Helper" />
     <meta name="twitter:description" content="Play Durak in your browser with a multi-threaded WebAssembly MCTS assistant." />
     <meta name="twitter:image" content="https://jorisperrenet.com/screenshots/durak-online.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Durak AI Helper",
+        "url": "https://jorisperrenet.com/durak-online/",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Any modern web browser",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "description": "Play Durak against AI opponents or enter a real-life game to receive Monte Carlo Tree Search move suggestions."
+      }
+    </script>
   </head>
-  <body>
+  <body class="m-0 min-h-screen bg-[#f9fbff] text-gray-900 antialiased dark:bg-[#111827] dark:text-gray-100">
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>

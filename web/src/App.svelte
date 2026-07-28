@@ -1,8 +1,8 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
 
-  let year = new Date().getFullYear()
   import Card from './lib/Card.svelte'
+  import SiteShell from './lib/site-kit/SiteShell.svelte'
   import { cardLabel, suitSymbol } from './lib/cards.js'
   import { loadSettings, saveSettings, settingsToGameConfig, PlayerType, getHumanPlayer } from './lib/settings.js'
 
@@ -962,44 +962,46 @@
   }
 </script>
 
-<div class="min-h-screen flex flex-col">
-  <main class="flex-1">
+<SiteShell
+  projectName="Durak AI Helper"
+  currentProjectId="durak-online"
+  projectHref="/durak-online/"
+  sourceHref="https://github.com/jorisperrenet/durak-online"
+  logoSrc="{import.meta.env.BASE_URL}personal-logo.svg"
+  additionalLinks={[{ href: 'https://github.com/jorisperrenet/durak', label: 'Terminal source' }]}
+>
+  <section class="mx-auto w-full max-w-7xl px-4 pt-4" aria-labelledby="durak-heading">
+    <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <h1 id="durak-heading" class="text-2xl font-bold text-gray-950 dark:text-white">Durak AI Helper</h1>
+      <p class="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-300">Play a complete game against browser opponents, or mirror the cards from a real-life game and let multi-threaded MCTS rank your legal moves.</p>
+    </div>
+  </section>
   <div class="mx-auto max-w-7xl px-4 py-4">
     <!-- Header -->
-    <div class="flex items-center justify-between gap-4">
-      <button class="text-lg font-semibold tracking-tight text-zinc-300 hover:text-zinc-100 transition-colors" on:click={() => { localStorage.clear(); location.reload() }}>Durak</button>
-
-      <div class="flex items-center gap-2">
-        <span class="text-[10px] text-zinc-600 italic">{settings.computerShuffle ? 'toggle for real game help' : 'toggle to play vs computer'}</span>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <span class="text-xs text-zinc-400">Computer Shuffle</span>
-          <button
-            class="relative w-10 h-5 rounded-full transition-colors {settings.computerShuffle ? 'bg-indigo-600' : 'bg-zinc-700'}"
-            on:click={() => switchMode(!settings.computerShuffle)}
-            role="switch"
-            aria-checked={settings.computerShuffle}
-            aria-label="Toggle computer shuffle"
-          >
-            <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform {settings.computerShuffle ? 'translate-x-5' : 'translate-x-0'}"></span>
-          </button>
-        </label>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="inline-flex overflow-hidden rounded-lg border border-gray-300 bg-white text-xs shadow-sm dark:border-gray-700 dark:bg-gray-900" aria-label="Durak mode">
+        <button class="px-3 py-2 font-semibold transition-colors {settings.computerShuffle ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'}" on:click={() => switchMode(true)}>Play against AI</button>
+        <button class="border-l border-gray-300 px-3 py-2 font-semibold transition-colors dark:border-gray-700 {settings.computerShuffle ? 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' : 'bg-blue-600 text-white'}" on:click={() => switchMode(false)}>Analyse a real game</button>
       </div>
 
-      <label class="flex items-center gap-1.5 text-xs text-zinc-400">
+      <div class="flex items-center gap-3">
+      <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
         <span>Threads:</span>
         <input
           type="number"
           min="1"
           max="16"
-          class="w-8 rounded border border-zinc-700 bg-zinc-950 px-1 py-1 text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          class="w-8 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-1 py-1 text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           value={settings.numThreads}
           on:change={e => { settings = { ...settings, numThreads: parseInt(e.target.value) || 4 }; saveSettings(settings) }}
         />
       </label>
+      <button class="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800" on:click={() => { localStorage.clear(); location.reload() }}>Reset all</button>
+      </div>
     </div>
 
     {#if error}
-      <div class="mt-3 rounded-lg border border-red-900/60 bg-red-950/40 p-3 text-sm text-red-200">
+      <div class="mt-3 rounded-lg border border-red-300 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 p-3 text-sm text-red-700 dark:text-red-200">
         <span class="font-medium">Error:</span> <span class="font-mono text-xs">{error}</span>
       </div>
     {/if}
@@ -1007,58 +1009,58 @@
     <!-- Controls -->
     <div class="mt-3 flex flex-col gap-2 text-sm">
       <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-zinc-500 text-xs">Players:</span>
+        <span class="text-gray-500 dark:text-gray-400 text-xs">Players:</span>
         {#each Array(settings.numPlayers) as _, i}
           {@const pid = `P${i}`}
           {@const pType = settings.computerShuffle ? (settings.playerTypes[pid] || (i === 0 ? PlayerType.Human : PlayerType.Random)) : (i === 0 ? PlayerType.Human : PlayerType.Real)}
           {@const isHuman = pType === PlayerType.Human}
-          <div class="flex items-center gap-0.5 rounded-md border {isHuman ? 'border-indigo-600 bg-indigo-950/30' : 'border-zinc-700 bg-zinc-950'} overflow-hidden">
+          <div class="flex items-center gap-0.5 rounded-md border {isHuman ? 'border-blue-500 dark:border-indigo-600 bg-blue-50 dark:bg-indigo-950/30' : 'border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950'} overflow-hidden">
             {#if i === 0 && isHuman}
-              <span class="px-2 py-1 text-xs font-medium text-indigo-300">You</span>
+              <span class="px-2 py-1 text-xs font-medium text-blue-700 dark:text-indigo-300">You</span>
             {:else if editingPlayer === pid}
-              <input type="text" class="w-16 px-1.5 py-1 text-xs bg-zinc-800 border-none text-white focus:outline-none" bind:value={editingName}
+              <input type="text" class="w-16 px-1.5 py-1 text-xs bg-gray-100 dark:bg-zinc-800 border-none text-white focus:outline-none" bind:value={editingName}
                 on:blur={() => updatePlayerName(pid, editingName)} on:keydown={e => { if (e.key === 'Enter') updatePlayerName(pid, editingName); if (e.key === 'Escape') editingPlayer = null }} use:selectAll />
             {:else}
-              <button class="px-2 py-1 text-xs font-medium text-zinc-300 hover:bg-zinc-800" on:click={() => { editingPlayer = pid; editingName = playerNames[pid] || pid }} title="Click to rename">{playerNames[pid] || pid}</button>
+              <button class="px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800" on:click={() => { editingPlayer = pid; editingName = playerNames[pid] || pid }} title="Click to rename">{playerNames[pid] || pid}</button>
             {/if}
             {#if settings.computerShuffle && i > 0}
-              <select class="h-6 px-1 text-xs bg-zinc-900 border-l border-zinc-700 text-zinc-400 focus:outline-none cursor-pointer" value={pType}
+              <select class="h-6 px-1 text-xs bg-gray-50 dark:bg-zinc-900 border-l border-gray-300 dark:border-zinc-700 text-gray-600 dark:text-gray-400 focus:outline-none cursor-pointer" value={pType}
                 on:change={e => { settings = { ...settings, playerTypes: { ...settings.playerTypes, [pid]: e.target.value } }; saveSettings(settings) }}>
                 <option value={PlayerType.Random}>Random</option>
                 <option value={PlayerType.MCTS}>MCTS</option>
               </select>
             {:else if settings.computerShuffle && i === 0}
-              <span class="h-6 flex items-center px-1.5 text-xs border-l border-zinc-700 text-indigo-400">Human</span>
+              <span class="h-6 flex items-center px-1.5 text-xs border-l border-gray-300 dark:border-zinc-700 text-blue-700 dark:text-indigo-400">Human</span>
             {:else}
-              <span class="h-6 flex items-center px-1.5 text-xs border-l border-zinc-700 text-indigo-400">{pType}</span>
+              <span class="h-6 flex items-center px-1.5 text-xs border-l border-gray-300 dark:border-zinc-700 text-blue-700 dark:text-indigo-400">{pType}</span>
             {/if}
           </div>
         {/each}
 
         {#if settings.computerShuffle ? !state : !manualGameStarted}
-          <button class="w-6 h-6 flex items-center justify-center rounded text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200 disabled:opacity-30" on:click={removePlayer} disabled={settings.numPlayers <= 2}>−</button>
-          <button class="w-6 h-6 flex items-center justify-center rounded text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200 disabled:opacity-30" on:click={addPlayer} disabled={settings.numPlayers >= 6}>+</button>
+          <button class="w-6 h-6 flex items-center justify-center rounded text-xs bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-gray-900 dark:hover:text-gray-200 disabled:opacity-30" on:click={removePlayer} disabled={settings.numPlayers <= 2}>−</button>
+          <button class="w-6 h-6 flex items-center justify-center rounded text-xs bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-gray-900 dark:hover:text-gray-200 disabled:opacity-30" on:click={addPlayer} disabled={settings.numPlayers >= 6}>+</button>
         {/if}
 
         <div class="flex items-center gap-1.5 ml-auto">
-          <button class="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs hover:bg-zinc-800 disabled:opacity-50" on:click={undo} disabled={!stateHistory.length}>
+          <button class="rounded border border-gray-300 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900 px-2 py-1 text-xs hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-50" on:click={undo} disabled={!stateHistory.length}>
             Undo{stateHistory.length ? ` (${stateHistory.length})` : ''}
           </button>
-          <button class="rounded border border-zinc-600 bg-zinc-800 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700" on:click={() => { clearSavedGame(); location.reload() }}>Reset</button>
+          <button class="rounded border border-gray-400 dark:border-zinc-600 bg-gray-100 dark:bg-zinc-800 px-2 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700" on:click={() => { clearSavedGame(); location.reload() }}>Reset</button>
         </div>
       </div>
 
       {#if settings.computerShuffle && hasMctsPlayer}
         <div class="flex items-center gap-2">
-          <label class="flex items-center gap-1 text-xs text-zinc-400">
+          <label class="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
             <span>Time:</span>
-            <input type="number" min="500" max="30000" step="500" class="w-16 px-1 py-0.5 rounded text-xs bg-zinc-800 border border-zinc-700" value={settings.mctsThinkingTimeMs}
+            <input type="number" min="500" max="30000" step="500" class="w-16 px-1 py-0.5 rounded text-xs bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700" value={settings.mctsThinkingTimeMs}
               on:change={e => { settings = { ...settings, mctsThinkingTimeMs: parseInt(e.target.value) || 2000 }; saveSettings(settings) }} />
-            <span class="text-zinc-500">ms</span>
+            <span class="text-gray-500 dark:text-gray-400">ms</span>
           </label>
-          <label class="flex items-center gap-1 text-xs text-zinc-400">
+          <label class="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
             <span>Determinizations:</span>
-            <input type="number" min="1" max="100" class="w-12 px-1 py-0.5 rounded text-xs bg-zinc-800 border border-zinc-700" value={settings.mctsDeterminizations}
+            <input type="number" min="1" max="100" class="w-12 px-1 py-0.5 rounded text-xs bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700" value={settings.mctsDeterminizations}
               on:change={e => { settings = { ...settings, mctsDeterminizations: parseInt(e.target.value) || 20 }; saveSettings(settings) }} />
           </label>
         </div>
@@ -1067,16 +1069,16 @@
 
     <!-- Manual Mode Setup Wizard -->
     {#if !settings.computerShuffle && !manualGameStarted}
-      <div class="mt-3 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 space-y-4">
+      <div class="mt-3 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 p-4 space-y-4">
         <!-- Game Rules -->
-        <div class="rounded-lg border border-zinc-800 bg-zinc-950/30 p-4">
-          <div class="text-sm font-medium text-zinc-300 mb-3">Game Rules</div>
+        <div class="rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/30 p-4">
+          <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Game Rules</div>
           <div class="grid gap-4 sm:grid-cols-3">
             <!-- Deck Size -->
             <label class="block">
-              <span class="text-xs text-zinc-400">Deck Size</span>
+              <span class="text-xs text-gray-600 dark:text-gray-400">Deck Size</span>
               <select
-                class="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm"
+                class="mt-1 w-full rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-2 py-1.5 text-sm"
                 value={settings.deckSize}
                 on:change={e => { settings = { ...settings, deckSize: parseInt(e.target.value) }; saveSettings(settings) }}
               >
@@ -1093,13 +1095,13 @@
             <label class="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                class="h-4 w-4 rounded border-zinc-700 bg-zinc-950 text-indigo-600"
+                class="h-4 w-4 rounded border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-indigo-600"
                 checked={settings.trumpReflecting}
                 on:change={e => { settings = { ...settings, trumpReflecting: e.target.checked }; saveSettings(settings) }}
               />
               <div>
-                <span class="text-sm text-zinc-300">Trump Reflecting</span>
-                <p class="text-[10px] text-zinc-500">Show trump to redirect</p>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Trump Reflecting</span>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">Show trump to redirect</p>
               </div>
             </label>
 
@@ -1107,29 +1109,29 @@
             <label class="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                class="h-4 w-4 rounded border-zinc-700 bg-zinc-950 text-indigo-600"
+                class="h-4 w-4 rounded border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-indigo-600"
                 checked={settings.reflecting}
                 on:change={e => { settings = { ...settings, reflecting: e.target.checked }; saveSettings(settings) }}
               />
               <div>
-                <span class="text-sm text-zinc-300">Reflecting</span>
-                <p class="text-[10px] text-zinc-500">Same rank to redirect</p>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Reflecting</span>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">Same rank to redirect</p>
               </div>
             </label>
           </div>
         </div>
 
         <!-- Step 1: Trump Card -->
-        <div class="rounded-lg border border-zinc-800 bg-zinc-950/30 p-4">
+        <div class="rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/30 p-4">
           <div class="flex items-center gap-2 mb-3">
-            <span class="flex items-center justify-center w-6 h-6 rounded-full {trumpCardSelected ? 'bg-green-600' : 'bg-indigo-600'} text-xs font-bold">1</span>
-            <span class="text-sm font-medium text-zinc-300">Trump card (bottom of deck)</span>
+            <span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white {trumpCardSelected ? 'bg-green-600' : 'bg-indigo-600'}">1</span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Trump card (bottom of deck)</span>
             {#if trumpCardSelected}
-              <button class="ml-auto rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1 text-xs font-medium hover:bg-zinc-900" on:click={() => trumpCardSelected = false}>Change</button>
+              <button class="ml-auto rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-1 text-xs font-medium hover:bg-gray-100 dark:hover:bg-zinc-900" on:click={() => trumpCardSelected = false}>Change</button>
             {/if}
           </div>
           {#if !trumpCardSelected}
-            <div class="text-xs text-zinc-500 mb-3">Select the card at the bottom of the deck.</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-3">Select the card at the bottom of the deck.</div>
             <div class="grid grid-cols-6 sm:grid-cols-9 md:grid-cols-12 gap-1 max-h-64 overflow-y-auto p-1">
               {#each getAllDeckCards() as c (cardKey(c))}
                 <Card card={c} size="sm" selectable on:click={() => { manualTrumpSuit = c.suit; manualTrumpRank = c.rank; trumpCardSelected = true }} />
@@ -1139,8 +1141,8 @@
             <div class="flex items-center gap-3">
               <Card card={currentTrumpCard} size="md" />
               <div>
-                <div class="text-sm text-zinc-300 font-medium">{cardLabel(currentTrumpCard)}</div>
-                <div class="text-xs text-zinc-500 mt-1">Trump: <span class="text-amber-400 font-medium">{suitSymbol(manualTrumpSuit)} {manualTrumpSuit}</span></div>
+                <div class="text-sm text-gray-700 dark:text-gray-300 font-medium">{cardLabel(currentTrumpCard)}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Trump: <span class="text-amber-700 dark:text-amber-400 font-medium">{suitSymbol(manualTrumpSuit)} {manualTrumpSuit}</span></div>
               </div>
             </div>
           {/if}
@@ -1148,21 +1150,21 @@
 
         <!-- Step 2: Hand Cards -->
         {#if trumpCardSelected}
-          <div class="rounded-lg border border-zinc-800 bg-zinc-950/30 p-4">
+          <div class="rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/30 p-4">
             <div class="flex items-center gap-2 mb-3">
-              <span class="flex items-center justify-center w-6 h-6 rounded-full {manualHand.length === 6 ? 'bg-green-600' : 'bg-indigo-600'} text-xs font-bold">2</span>
-              <span class="text-sm font-medium text-zinc-300">Select your 6 hand cards</span>
-              <span class="text-xs text-zinc-500 ml-auto">{manualHand.length}/6</span>
+              <span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white {manualHand.length === 6 ? 'bg-green-600' : 'bg-indigo-600'}">2</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Select your 6 hand cards</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 ml-auto">{manualHand.length}/6</span>
             </div>
-            <div class="flex flex-wrap gap-2 min-h-[4rem] p-2 rounded border border-zinc-800 bg-zinc-950/50">
+            <div class="flex flex-wrap gap-2 min-h-[4rem] p-2 rounded border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/50">
               {#each sortCards(manualHand) as c (cardKey(c))}
                 <Card card={c} size="sm" selectable on:click={() => manualHand = manualHand.filter(x => cardKey(x) !== cardKey(c))} />
               {/each}
-              {#if !manualHand.length}<div class="text-xs text-zinc-500 self-center">Click cards below to add.</div>{/if}
+              {#if !manualHand.length}<div class="text-xs text-gray-500 dark:text-gray-400 self-center">Click cards below to add.</div>{/if}
             </div>
             {#if manualHand.length < 6}
               <div class="mt-3">
-                <div class="text-xs text-zinc-400 mb-2">Click to add ({6 - manualHand.length} more):</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400 mb-2">Click to add ({6 - manualHand.length} more):</div>
                 <div class="flex flex-wrap gap-1">
                   {#each getAvailableCards([...manualHand, currentTrumpCard]) as c (cardKey(c))}
                     <Card card={c} size="sm" selectable on:click={() => manualHand = [...manualHand, c]} />
@@ -1175,13 +1177,13 @@
 
         <!-- Step 3: Opponent Trumps -->
         {#if manualHand.length === 6}
-          <div class="rounded-lg border border-zinc-800 bg-zinc-950/30 p-4">
+          <div class="rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/30 p-4">
             <div class="flex items-center gap-2 mb-3">
-              <span class="flex items-center justify-center w-6 h-6 rounded-full {step3Complete ? 'bg-green-600' : 'bg-indigo-600'} text-xs font-bold">3</span>
-              <span class="text-sm font-medium text-zinc-300">Opponent's lowest trump <span class="text-amber-400">({suitSymbol(manualTrumpSuit)})</span></span>
+              <span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white {step3Complete ? 'bg-green-600' : 'bg-indigo-600'}">3</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Opponent's lowest trump <span class="text-amber-700 dark:text-amber-400">({suitSymbol(manualTrumpSuit)})</span></span>
             </div>
-            <div class="text-xs text-zinc-500 mb-3">
-              {#if lowestTrumpInHand}Your lowest: <span class="text-zinc-300 font-medium">{cardLabel(lowestTrumpInHand)}</span>{:else}You have no trumps{/if}
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              {#if lowestTrumpInHand}Your lowest: <span class="text-gray-700 dark:text-gray-300 font-medium">{cardLabel(lowestTrumpInHand)}</span>{:else}You have no trumps{/if}
             </div>
             <div class="space-y-4">
               {#each Array(settings.numPlayers) as _, idx}
@@ -1189,13 +1191,13 @@
                 {#if pid !== me}
                   {@const sel = opponentTrumps[pid]}
                   <div>
-                    <div class="text-xs text-zinc-400 mb-2">{displayName(pid)}'s lowest ({suitSymbol(manualTrumpSuit)}):</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400 mb-2">{displayName(pid)}'s lowest ({suitSymbol(manualTrumpSuit)}):</div>
                     <div class="flex flex-wrap items-center gap-2">
-                      <button class="rounded-md border px-3 py-1.5 text-xs font-medium {sel === 'None' ? 'border-amber-500 bg-amber-500/20 text-amber-300' : 'border-zinc-700 bg-zinc-950 text-zinc-400 hover:bg-zinc-900'}" on:click={() => clearOpponentTrump(pid)}>No Trump</button>
+                      <button class="rounded-md border px-3 py-1.5 text-xs font-medium {sel === 'None' ? 'border-amber-500 bg-amber-500/20 text-amber-800 dark:text-amber-300' : 'border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-900'}" on:click={() => clearOpponentTrump(pid)}>No Trump</button>
                       {#if sel && sel !== 'None'}
-                        <div class="flex items-center gap-2 ml-2 px-2 py-1 rounded border border-indigo-600/50 bg-indigo-950/30">
+                        <div class="flex items-center gap-2 ml-2 px-2 py-1 rounded border border-blue-500 dark:border-indigo-600/50 bg-blue-50 dark:bg-indigo-950/30">
                           <Card card={{ suit: manualTrumpSuit, rank: sel }} size="sm" />
-                          <button class="text-xs text-zinc-400 hover:text-zinc-200" on:click={() => clearOpponentTrump(pid)}>✕</button>
+                          <button class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200" on:click={() => clearOpponentTrump(pid)}>✕</button>
                         </div>
                       {:else}
                         {#each remainingTrumpCards as c (cardKey(c))}
@@ -1210,12 +1212,12 @@
           </div>
 
           {#if step3Complete}
-            <div class="flex items-center justify-between p-4 rounded-lg border border-zinc-800 bg-zinc-950/30">
+            <div class="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/30">
               <div>
-                <div class="text-sm font-medium {manualStarts === me ? 'text-indigo-400' : 'text-zinc-400'}">{manualStarts === me ? 'You start!' : `${displayName(manualStarts)} starts`}</div>
-                <div class="text-xs text-zinc-500">(By lowest trump)</div>
+                <div class="text-sm font-medium {manualStarts === me ? 'text-blue-700 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}">{manualStarts === me ? 'You start!' : `${displayName(manualStarts)} starts`}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">(By lowest trump)</div>
               </div>
-              <button class="rounded-md bg-indigo-600 px-6 py-2.5 text-sm font-medium hover:bg-indigo-500" on:click={newGame}>Start Game</button>
+              <button class="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500" on:click={newGame}>Start Game</button>
             </div>
           {/if}
         {/if}
@@ -1224,14 +1226,14 @@
 
     <!-- Main Game Area -->
     <div class="mt-6 grid gap-4 lg:grid-cols-3">
-      <div class="lg:col-span-2 rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+      <div class="lg:col-span-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 p-5">
         {#if state && (settings.computerShuffle || manualGameStarted)}
           <!-- Game Over Banner -->
           {@const loser = getLoser(state)}
           {#if loser}
             {@const youLost = loser === me}
-            <div class="mb-4 p-4 rounded-lg border-2 {youLost ? 'border-zinc-500 bg-zinc-950/40' : 'border-indigo-500 bg-indigo-950/40'}">
-              <div class="text-lg font-bold {youLost ? 'text-zinc-300' : 'text-indigo-400'}">
+            <div class="mb-4 p-4 rounded-lg border-2 {youLost ? 'border-zinc-500 bg-white dark:bg-zinc-950/40' : 'border-blue-500 dark:border-indigo-500 bg-blue-50 dark:bg-indigo-950/40'}">
+              <div class="text-lg font-bold {youLost ? 'text-gray-700 dark:text-gray-300' : 'text-blue-700 dark:text-indigo-400'}">
                 {#if youLost}You're the Durak!{:else}{displayName(loser)} is the Durak!{/if}
               </div>
             </div>
@@ -1249,27 +1251,27 @@
               {@const pType = settings.computerShuffle ? settings.playerTypes[pid] : PlayerType.Real}
               {@const role = getPlayerRole(state, pid)}
               {@const isTurn = isPlayersTurn(state, pid)}
-              <div class="mt-5 rounded-lg border {isTurn ? 'border-yellow-500/50' : 'border-zinc-800'} bg-zinc-950/30 p-4">
+              <div class="mt-5 rounded-lg border {isTurn ? 'border-yellow-500/50' : 'border-gray-200 dark:border-zinc-800'} bg-gray-50 dark:bg-zinc-950/30 p-4">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
-                    <span class="text-xs {isTurn ? 'text-yellow-300 font-medium' : 'text-zinc-400'}">{displayName(pid)}</span>
+                    <span class="text-xs {isTurn ? 'text-yellow-300 font-medium' : 'text-gray-600 dark:text-gray-400'}">{displayName(pid)}</span>
                     {#if settings.computerShuffle}
-                      <span class="text-[10px] px-1.5 py-0.5 rounded {pType === PlayerType.MCTS ? 'bg-indigo-900/50 text-indigo-300' : 'bg-zinc-800 text-zinc-400'}">{pType}</span>
+                      <span class="rounded px-1.5 py-0.5 text-[10px] {pType === PlayerType.MCTS ? 'bg-blue-50 text-blue-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400'}">{pType}</span>
                     {/if}
                     {#if role}
-                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">{role}</span>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300">{role}</span>
                     {/if}
                     {#if handKnown.length > 0 || areAllCardsDeducible(state)}
-                      <span class="text-[10px] text-amber-400">({areAllCardsDeducible(state) ? 'all known' : `${handKnown.length} known`})</span>
+                      <span class="text-[10px] text-amber-700 dark:text-amber-400">({areAllCardsDeducible(state) ? 'all known' : `${handKnown.length} known`})</span>
                     {/if}
                   </div>
                   <div class="flex items-center gap-2">
                     {#if settings.computerShuffle}
-                      <label class="flex items-center gap-1 text-[10px] text-zinc-500 cursor-pointer">
+                      <label class="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 cursor-pointer">
                         <input type="checkbox" class="rounded w-3 h-3" bind:checked={showOpponentCards} /> Show
                       </label>
                     {/if}
-                    <span class="text-xs text-zinc-500">{totalCards} cards</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{totalCards} cards</span>
                   </div>
                 </div>
                 <div class="mt-2 flex flex-wrap gap-2">
@@ -1279,7 +1281,7 @@
                     {#each sortCards(handKnown) as c, i (cardKey(c) + '-' + i)}<Card card={c} size="sm" known />{/each}
                     {#each Array(handUnknownCount) as _, i (i)}<Card faceDown size="sm" />{/each}
                   {/if}
-                  {#if !totalCards}<div class="text-xs text-zinc-500">No cards</div>{/if}
+                  {#if !totalCards}<div class="text-xs text-gray-500 dark:text-gray-400">No cards</div>{/if}
                 </div>
               </div>
             {/if}
@@ -1287,12 +1289,12 @@
 
           <!-- Table & Stock -->
           <div class="mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
-            <div class="flex-1 rounded-lg border border-zinc-800 bg-zinc-950/30 p-4">
-              <div class="flex items-center justify-between text-xs text-zinc-400">
+            <div class="flex-1 rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/30 p-4">
+              <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
                 <span>Table</span>
                 <div class="flex items-center gap-2">
-                  <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">{state.phase}</span>
-                  <span class="text-zinc-500">{actor(state) === me ? 'Your turn' : `${displayName(actor(state))}'s turn`}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300">{state.phase}</span>
+                  <span class="text-gray-500 dark:text-gray-400">{actor(state) === me ? 'Your turn' : `${displayName(actor(state))}'s turn`}</span>
                 </div>
               </div>
               <div class="mt-3 flex flex-wrap gap-3">
@@ -1302,16 +1304,16 @@
                     {#if p.defense}<div class="absolute left-6 top-6"><Card card={parseCard(p.defense)} size="md" /></div>{/if}
                   </div>
                 {/each}
-                {#if !state.table.length}<div class="text-xs text-zinc-500">No cards on table.</div>{/if}
+                {#if !state.table.length}<div class="text-xs text-gray-500 dark:text-gray-400">No cards on table.</div>{/if}
               </div>
             </div>
             {#if true}
               {@const stockCount = state.stock?.length || 0}
               {@const trumpCard = stockCount > 0 ? parseCard(state.stock[0]) : null}
               <div class="flex-shrink-0 flex flex-col items-center justify-center gap-2 sm:w-24">
-                <div class="text-xs text-zinc-400">Trump</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">Trump</div>
                 {#if trumpCard}<Card card={trumpCard} size="sm" />{:else}<div class="text-3xl">{suitSymbol(state.trump)}</div>{/if}
-                <div class="text-xs text-zinc-500 text-center">{stockCount > 0 ? `${stockCount} in stock` : 'Stock empty'}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 text-center">{stockCount > 0 ? `${stockCount} in stock` : 'Stock empty'}</div>
               </div>
             {/if}
           </div>
@@ -1321,11 +1323,11 @@
             {@const unknownCount = myUnknownCount(state)}
             {@const usedCards = getUsedCardsInGame(state)}
             {@const availableCards = getAvailableCards(usedCards)}
-            <div class="mt-4 rounded-lg border-2 border-amber-500/50 bg-amber-950/20 p-4">
-              <div class="text-sm font-medium text-amber-300 mb-2">
+            <div class="mt-4 rounded-lg border-2 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-4">
+              <div class="text-sm font-medium text-amber-800 dark:text-amber-300 mb-2">
                 You drew {unknownCount} card{unknownCount > 1 ? 's' : ''} from the stock
               </div>
-              <div class="text-xs text-zinc-400 mb-3">Select which card{unknownCount > 1 ? 's' : ''} you drew:</div>
+              <div class="text-xs text-gray-600 dark:text-gray-400 mb-3">Select which card{unknownCount > 1 ? 's' : ''} you drew:</div>
               <div class="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto">
                 {#each availableCards as c (cardKey(c))}
                   <Card card={c} size="sm" selectable on:click={() => replaceUnknownCard(c)} />
@@ -1341,23 +1343,23 @@
             {@const myRole = getPlayerRole(state, me)}
             {@const isMyTurn = isPlayersTurn(state, me)}
             {@const hasUnknownCards = !settings.computerShuffle && myUnknownCount(state) > 0}
-            <div class="durak-felt mt-4 rounded-lg border {hasUnknownCards ? 'border-amber-500/50' : isMyTurn ? 'border-yellow-500/50' : 'border-zinc-800'} p-4">
-            <div class="flex items-center justify-between text-xs text-zinc-400">
+            <div class="durak-felt mt-4 rounded-lg border {hasUnknownCards ? 'border-amber-500/50' : isMyTurn ? 'border-yellow-500/50' : 'border-gray-200 dark:border-zinc-800'} p-4">
+            <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
               <div class="flex items-center gap-3">
                 <span class="{isMyTurn ? 'text-yellow-300 font-medium' : ''}">Your Hand</span>
                 {#if settings.computerShuffle}
-                  <span class="text-[10px] px-1.5 py-0.5 rounded {myType === PlayerType.Human ? 'bg-indigo-900/50 text-indigo-300' : 'bg-zinc-800 text-zinc-400'}">{myType}</span>
+                  <span class="rounded px-1.5 py-0.5 text-[10px] {myType === PlayerType.Human ? 'bg-blue-50 text-blue-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400'}">{myType}</span>
                 {/if}
                 {#if myRole}
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">{myRole}</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300">{myRole}</span>
                 {/if}
                 {#if hasUnknownCards}
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/50 text-amber-300">{myUnknownCount(state)} unknown</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300">{myUnknownCount(state)} unknown</span>
                 {:else if areAllCardsDeducible(state) || myKnownToOpponents.length}
-                  <span class="text-[10px] text-amber-400"><span class="inline-block w-3 h-3 bg-amber-500/80 text-white text-[7px] text-center rounded-sm mr-0.5">!</span>= known</span>
+                  <span class="text-[10px] text-amber-700 dark:text-amber-400"><span class="inline-block w-3 h-3 bg-amber-500/80 text-white text-[7px] text-center rounded-sm mr-0.5">!</span>= known</span>
                 {/if}
               </div>
-              <span class="text-zinc-500">{myKnownHand(state).length}{hasUnknownCards ? ` + ${myUnknownCount(state)} unknown` : ''} cards</span>
+              <span class="text-gray-500 dark:text-gray-400">{myKnownHand(state).length}{hasUnknownCards ? ` + ${myUnknownCount(state)} unknown` : ''} cards</span>
             </div>
             <div class="mt-2 flex flex-wrap gap-2">
               {#each myKnownHand(state) as c (cardKey(c))}
@@ -1380,7 +1382,7 @@
           {#if actor(state) === me}
             <div class="mt-4 flex flex-wrap gap-2">
               {#each legal.filter(a => !actionCard(a)) as a (actionKey(a))}
-                <button class="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs hover:bg-zinc-900" on:click={() => playAction(a)}>{actionText(a)}</button>
+                <button class="rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-zinc-900" on:click={() => playAction(a)}>{actionText(a)}</button>
               {/each}
             </div>
           {/if}
@@ -1390,9 +1392,9 @@
             <div class="w-full max-w-sm space-y-4 mb-6">
               <!-- Deck Size -->
               <label class="block">
-                <span class="text-sm font-medium text-zinc-300">Deck Size</span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Deck Size</span>
                 <select
-                  class="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+                  class="mt-1 w-full rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-2 text-sm"
                   value={settings.deckSize}
                   on:change={e => { settings = { ...settings, deckSize: parseInt(e.target.value) }; saveSettings(settings) }}
                 >
@@ -1409,13 +1411,13 @@
               <label class="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  class="h-4 w-4 rounded border-zinc-700 bg-zinc-950 text-indigo-600"
+                  class="h-4 w-4 rounded border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-indigo-600"
                   checked={settings.trumpReflecting}
                   on:change={e => { settings = { ...settings, trumpReflecting: e.target.checked }; saveSettings(settings) }}
                 />
                 <div>
-                  <span class="text-sm font-medium text-zinc-300">Trump Reflecting</span>
-                  <p class="text-xs text-zinc-500">Show trump of same rank to redirect attack</p>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Trump Reflecting</span>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Show trump of same rank to redirect attack</p>
                 </div>
               </label>
 
@@ -1423,26 +1425,26 @@
               <label class="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  class="h-4 w-4 rounded border-zinc-700 bg-zinc-950 text-indigo-600"
+                  class="h-4 w-4 rounded border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-indigo-600"
                   checked={settings.reflecting}
                   on:change={e => { settings = { ...settings, reflecting: e.target.checked }; saveSettings(settings) }}
                 />
                 <div>
-                  <span class="text-sm font-medium text-zinc-300">Reflecting</span>
-                  <p class="text-xs text-zinc-500">Play card of same rank to redirect attack</p>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Reflecting</span>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Play card of same rank to redirect attack</p>
                 </div>
               </label>
             </div>
 
-            <button class="rounded-md bg-indigo-600 px-8 py-3 text-lg font-medium hover:bg-indigo-500" on:click={newGame}>Start Game</button>
+            <button class="rounded-lg bg-indigo-600 px-8 py-3 text-lg font-semibold text-white hover:bg-indigo-500" on:click={newGame}>Start Game</button>
           </div>
         {:else}
-          <div class="text-sm text-zinc-400">Loading…</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">Loading…</div>
         {/if}
       </div>
 
       <!-- Right Panel: Actions/Solver -->
-      <div class="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+      <div class="rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 p-5">
         {#if state && (settings.computerShuffle || manualGameStarted)}
           {@const currentActor = actor(state)}
           {@const isMyTurn = currentActor === me}
@@ -1452,12 +1454,12 @@
           <div class="flex items-center gap-2 mb-3">
             <div class="text-sm font-medium">
               {isMyTurn ? 'Your' : `${displayName(currentActor)}'s`} Turn
-              <span class="text-[10px] ml-1 px-1.5 py-0.5 rounded {currentType === PlayerType.MCTS ? 'bg-indigo-900/50 text-indigo-300' : 'bg-zinc-800 text-zinc-400'}">{currentType}</span>
+              <span class="ml-1 rounded px-1.5 py-0.5 text-[10px] {currentType === PlayerType.MCTS ? 'bg-blue-50 text-blue-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400'}">{currentType}</span>
             </div>
             <div class="flex-1"></div>
             {#if isMyTurn || (!settings.computerShuffle && currentActor === me)}
               <button
-                class="rounded-md px-3 py-1.5 text-xs font-medium {settings.showHints ? 'bg-indigo-600 hover:bg-indigo-500' : 'border border-zinc-700 bg-zinc-900 hover:bg-zinc-800'}"
+                class="rounded-md px-3 py-1.5 text-xs font-medium {settings.showHints ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-300 dark:hover:bg-zinc-800'}"
                 on:click={toggleHints}
               >
                 {settings.showHints ? 'Hints On' : 'Hints Off'}
@@ -1467,20 +1469,20 @@
 
           <!-- Solver settings (when hints enabled and it's my turn) -->
           {#if settings.showHints && isMyTurn}
-            <div class="mb-3 flex flex-wrap gap-4 text-xs text-zinc-400">
+            <div class="mb-3 flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400">
               <div class="flex flex-col gap-1">
-                <label class="flex items-center gap-1"><span class="w-24">Determinizations:</span><input class="w-20 rounded border border-zinc-700 bg-zinc-950 px-1.5 py-0.5 text-xs" type="number" min="1" value={settings.hintDeterminizations}
+                <label class="flex items-center gap-1"><span class="w-24">Determinizations:</span><input class="w-20 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-1.5 py-0.5 text-xs" type="number" min="1" value={settings.hintDeterminizations}
                   on:change={e => { settings = { ...settings, hintDeterminizations: parseInt(e.target.value) || 50 }; saveSettings(settings) }} /></label>
-                <label class="flex items-center gap-1"><span class="w-24">Rollouts:</span><input class="w-20 rounded border border-zinc-700 bg-zinc-950 px-1.5 py-0.5 text-xs" type="number" min="100" value={settings.hintRollouts}
+                <label class="flex items-center gap-1"><span class="w-24">Rollouts:</span><input class="w-20 rounded border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-1.5 py-0.5 text-xs" type="number" min="100" value={settings.hintRollouts}
                   on:change={e => { settings = { ...settings, hintRollouts: parseInt(e.target.value) || 5000 }; saveSettings(settings) }} /></label>
               </div>
-              <div class="flex flex-col gap-1 text-zinc-500"><span>% = win rate</span><span># = simulations</span><span class="text-zinc-600 italic text-[10px]">Tip: play with these numbers</span></div>
+              <div class="flex flex-col gap-1 text-gray-500 dark:text-gray-400"><span>% = win rate</span><span># = simulations</span><span class="text-gray-500 dark:text-gray-500 italic text-[10px]">Tip: play with these numbers</span></div>
             </div>
           {/if}
 
           <!-- Action Display -->
           {#if !settings.computerShuffle && myUnknownCount(state) > 0}
-            <div class="text-sm text-amber-400">
+            <div class="text-sm text-amber-700 dark:text-amber-400">
               Please specify which cards you drew before continuing.
             </div>
           {:else if isMyTurn}
@@ -1494,15 +1496,15 @@
                   {@const isBest = aggregate?.actions?.length && actionKey(a.action) === actionKey(aggregate.actions[0].action) && a.score != null}
                   {@const label = { attack: 'Attack', defend: 'Defend', throw: 'Throw', reflect: 'Reflect', reflect_trump: 'Show' }[a.action.type]}
                   {@const winPct = a.score != null ? (a.score * 100).toFixed(1) : null}
-                  <button class="flex flex-col items-center gap-1 p-1.5 rounded-lg border {isBest ? 'border-indigo-500 bg-indigo-950/40' : 'border-zinc-700 bg-zinc-900/50'} hover:bg-zinc-800/50"
+                  <button class="flex flex-col items-center gap-1 p-1.5 rounded-lg border {isBest ? 'border-blue-500 dark:border-indigo-500 bg-blue-50 dark:bg-indigo-950/40' : 'border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900/50'} hover:bg-gray-100 dark:hover:bg-zinc-800/50"
                     on:click={() => applyAnyAction(a.action, true)} title={winPct !== null ? `${winPct}% from ${a.visits}` : label}>
-                    <div class="text-[10px] text-zinc-400">{label}</div>
+                    <div class="text-[10px] text-gray-600 dark:text-gray-400">{label}</div>
                     <Card {card} size="sm" />
                     {#if winPct !== null}
                       <div class="flex flex-col items-center gap-0.5">
-                        <div class="text-[10px] {a.score > 0.5 ? 'text-green-400' : a.score < 0.5 ? 'text-red-400' : 'text-zinc-400'}">{winPct}%</div>
-                        <div class="w-10 h-1 bg-zinc-700 rounded-full overflow-hidden"><div class="h-full {a.score > 0.5 ? 'bg-green-500' : a.score < 0.5 ? 'bg-red-500' : 'bg-zinc-500'}" style="width: {winPct}%"></div></div>
-                        <div class="text-[8px] text-zinc-500">{a.visits}</div>
+                        <div class="text-[10px] {a.score > 0.5 ? 'text-green-700 dark:text-green-400' : a.score < 0.5 ? 'text-red-700 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}">{winPct}%</div>
+                        <div class="w-10 h-1 bg-gray-200 dark:bg-zinc-700 rounded-full overflow-hidden"><div class="h-full {a.score > 0.5 ? 'bg-green-500' : a.score < 0.5 ? 'bg-red-500' : 'bg-zinc-500'}" style="width: {winPct}%"></div></div>
+                        <div class="text-[8px] text-gray-500 dark:text-gray-400">{a.visits}</div>
                       </div>
                     {/if}
                   </button>
@@ -1515,11 +1517,11 @@
                 {#each otherActions as a (actionKey(a.action))}
                   {@const isBest = aggregate?.actions?.length && actionKey(a.action) === actionKey(aggregate.actions[0].action) && a.score != null}
                   {@const winPct = a.score != null ? (a.score * 100).toFixed(1) : null}
-                  <button class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg border {isBest ? 'border-indigo-500 bg-indigo-950/40' : 'border-zinc-700 bg-zinc-900/50'} hover:bg-zinc-800/50" on:click={() => applyAnyAction(a.action, true)}>
+                  <button class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg border {isBest ? 'border-blue-500 dark:border-indigo-500 bg-blue-50 dark:bg-indigo-950/40' : 'border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900/50'} hover:bg-gray-100 dark:hover:bg-zinc-800/50" on:click={() => applyAnyAction(a.action, true)}>
                     <div class="text-xs font-medium">{actionText(a.action)}</div>
                     {#if winPct !== null}
-                      <div class="text-[10px] {a.score > 0.5 ? 'text-green-400' : a.score < 0.5 ? 'text-red-400' : 'text-zinc-400'}">{winPct}%</div>
-                      <div class="text-[8px] text-zinc-500">{a.visits}</div>
+                      <div class="text-[10px] {a.score > 0.5 ? 'text-green-700 dark:text-green-400' : a.score < 0.5 ? 'text-red-700 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}">{winPct}%</div>
+                      <div class="text-[8px] text-gray-500 dark:text-gray-400">{a.visits}</div>
                     {/if}
                   </button>
                 {/each}
@@ -1531,14 +1533,14 @@
             {#if types.other.length}
               <div class="flex flex-wrap gap-2 mb-4">
                 {#each types.other as a (actionKey(a))}
-                  <button class="rounded-md border-2 px-4 py-2.5 text-sm font-semibold shadow-lg border-indigo-500 bg-indigo-950 text-indigo-200 hover:bg-indigo-900" on:click={() => applyAnyAction(a, true)}>{actionText(a)}</button>
+                  <button class="rounded-lg border-2 border-blue-500 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-800 shadow-sm hover:bg-blue-100 dark:border-indigo-500 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900" on:click={() => applyAnyAction(a, true)}>{actionText(a)}</button>
                 {/each}
               </div>
             {/if}
             {#each [['Attack', types.attack], ['Defend', types.defend], ['Throw', types.throw], ['Reflect', types.reflect], ['Show Trump', types.reflectTrump]] as [label, acts]}
               {#if acts.length}
                 <div class="mb-3">
-                  <div class="text-xs text-zinc-400 mb-1.5">{label}:</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400 mb-1.5">{label}:</div>
                   <div class="flex flex-wrap gap-1.5">
                     {#each sortActionsByCard(acts) as a (actionKey(a))}
                       <Card card={actionCard(a)} size="sm" selectable on:click={() => applyAnyAction(a, true)} />
@@ -1548,37 +1550,31 @@
               {/if}
             {/each}
             <details class="text-xs">
-              <summary class="text-zinc-500 cursor-pointer hover:text-zinc-300 mb-2">Manual card input</summary>
-              <div class="space-y-2 mt-2 p-2 rounded border border-zinc-800 bg-zinc-950/50">
+              <summary class="text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-800 dark:hover:text-gray-300 mb-2">Manual card input</summary>
+              <div class="space-y-2 mt-2 p-2 rounded border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/50">
                 <div class="grid grid-cols-2 gap-2">
-                  <label class="grid gap-1"><span class="text-zinc-400">Suit</span><select class="rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5" bind:value={opponentPlaySuit}>{#each SUITS as s}<option value={s}>{s}</option>{/each}</select></label>
-                  <label class="grid gap-1"><span class="text-zinc-400">Rank</span><select class="rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5" bind:value={opponentPlayRank}>{#each RANKS as r}<option value={r}>{r}</option>{/each}</select></label>
+                  <label class="grid gap-1"><span class="text-gray-600 dark:text-gray-400">Suit</span><select class="rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-2 py-1.5" bind:value={opponentPlaySuit}>{#each SUITS as s}<option value={s}>{s}</option>{/each}</select></label>
+                  <label class="grid gap-1"><span class="text-gray-600 dark:text-gray-400">Rank</span><select class="rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-2 py-1.5" bind:value={opponentPlayRank}>{#each RANKS as r}<option value={r}>{r}</option>{/each}</select></label>
                 </div>
-                <button class="w-full rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5 hover:bg-zinc-900" on:click={applyOpponentCard}>Apply</button>
+                <button class="w-full rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-zinc-900" on:click={applyOpponentCard}>Apply</button>
               </div>
             </details>
           {:else if settings.computerShuffle && aiThinking && aiThinkingPlayer === currentActor}
             <!-- AI thinking indicator -->
-            <div class="rounded-lg border border-indigo-700/50 bg-indigo-950/30 p-4">
+            <div class="rounded-lg border border-blue-300 dark:border-indigo-700/50 bg-blue-50 dark:bg-indigo-950/30 p-4">
               <div class="flex items-center gap-3">
-                <div class="animate-spin rounded-full h-5 w-5 border-2 border-indigo-500 border-t-transparent"></div>
+                <div class="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 dark:border-indigo-500 border-t-transparent"></div>
                 <div>
-                  <div class="text-sm font-medium text-indigo-300">{currentType === PlayerType.MCTS ? 'Thinking...' : 'Playing...'}</div>
-                  <div class="text-xs text-zinc-500">{currentType === PlayerType.Random ? 'Random' : 'MCTS'}</div>
+                  <div class="text-sm font-medium text-blue-700 dark:text-indigo-300">{currentType === PlayerType.MCTS ? 'Thinking...' : 'Playing...'}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{currentType === PlayerType.Random ? 'Random' : 'MCTS'}</div>
                 </div>
               </div>
             </div>
           {:else}
-            <div class="text-xs text-zinc-500">Waiting...</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Waiting...</div>
           {/if}
         {/if}
       </div>
     </div>
   </div>
-  </main>
-
-  <footer class="py-2 text-center text-sm text-zinc-500">
-    <p>&copy; {year} - <a href="https://jorisperrenet.github.io" class="hover:text-zinc-300 underline">Joris Perrenet</a></p>
-  </footer>
-</div>
-
+</SiteShell>
